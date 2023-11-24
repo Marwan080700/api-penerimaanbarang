@@ -1,8 +1,8 @@
 package salesdetaildto
 
 type SalesDetailRequest struct {
-	IDSales   int    `json:"-" form:"sale_id" gorm:"type:int"`
-	IDProduct int    `json:"-" form:"product_id" gorm:"type:int"`
+	IDSales   int    `json:"sale_id" form:"sale_id" gorm:"type:int"`
+	IDProduct int    `json:"product_id" form:"product_id" gorm:"type:int"`
 	Qty       int    `json:"qty" form:"qty" gorm:"type:int"`
 	Price     int    `json:"price" form:"price" gorm:"type:int"`
 	Amount    int    `json:"amount" form:"amount" gorm:"type:int"`
@@ -11,8 +11,8 @@ type SalesDetailRequest struct {
 }
 
 type SalesDetailResponse struct {
-	IDSales   int    `json:"-" form:"sale_id" gorm:"type:int"`
-	IDProduct int    `json:"-" form:"product_id" gorm:"type:int"`
+	IDSales   int    `json:"sale_id" form:"sale_id" gorm:"type:int"`
+	IDProduct int    `json:"product_id" form:"product_id" gorm:"type:int"`
 	Qty       int    `json:"qty" form:"qty" gorm:"type:int"`
 	Price     int    `json:"price" form:"price" gorm:"type:int"`
 	Amount    int    `json:"amount" form:"amount" gorm:"type:int"`

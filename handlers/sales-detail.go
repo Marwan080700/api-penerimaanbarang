@@ -212,17 +212,17 @@ func (h *handlerSalesDetail) UpdateSalesDetail(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: data})
 }
 
-func (h *handlerSalesDetail) DeleteSalesDetail(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-	salesdetail, err := h.SalesDetailRepository.GetSalesDetail(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
-	}
+// func (h *handlerSalesDetail) DeleteSalesDetail(c echo.Context) error {
+// 	id, _ := strconv.Atoi(c.Param("id"))
+// 	salesdetail, err := h.SalesDetailRepository.GetSalesDetail(id)
+// 	if err != nil {
+// 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
+// 	}
 
-	data, err := h.SalesDetailRepository.DeleteSalesDetail(salesdetail)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
-	}
+// 	data, err := h.SalesDetailRepository.DeleteSalesDetail(salesdetail)
+// 	if err != nil {
+// 		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+// 	}
 
-	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: data})
-}
+// 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: data})
+// }

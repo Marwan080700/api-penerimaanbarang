@@ -8,9 +8,10 @@ import (
 
 	invoicedto "pengirimanbarang/dto/invoice"
 	dto "pengirimanbarang/dto/result"
-	"github.com/jung-kurt/gofpdf"
 	"pengirimanbarang/models"
 	"pengirimanbarang/repositories"
+
+	"github.com/jung-kurt/gofpdf"
 
 	// "os"
 
@@ -249,18 +250,26 @@ func (h *handlerInvoice) UpdateInvoice(c echo.Context) error {
 }
 
 func (h *handlerInvoice) DeleteInvoice(c echo.Context) error {
-	id, _ := strconv.Atoi(c.Param("id"))
-	invoice, err := h.InvoiceRepository.GetInvoice(id)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
-	}
+    id, _ := strconv.Atoi(c.Param("id"))
 
-	data, err := h.InvoiceRepository.DeleteInvoice(invoice)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
-	}
+    // Get the invoice details
+    invoice, err := h.InvoiceRepository.GetInvoice(id)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+    // Delete the sales
+    _, err = h.InvoiceRepository.DeleteSale(invoice.Sales)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
 
-	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: data})
+    // Delete the invoice
+    _, err = h.InvoiceRepository.DeleteInvoice(invoice)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: "Invoice, Sales, and SalesDetails deleted successfully"})
 }
 
 func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
@@ -336,24 +345,25 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         pdf.SetFont("Arial", "B", 12)
 
         // Set the width and height of each cell in the table
-        cellWidth = 47.5
+        cellWidth = 95.0
         cellHeight := 10.0
 
-        pdf.CellFormat(cellWidth, cellHeight, "Invoice", "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, "Discount", "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, "PPN11", "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, "Total Amount", "1", 0, "C", false, 0, "")
+        pdf.CellFormat(cellWidth, cellHeight, "Delivery Order Number", "1", 0, "C", false, 0, "")
+        pdf.CellFormat(cellWidth, cellHeight, "Quantity", "1", 0, "C", false, 0, "")
+        pdf.CellFormat(cellWidth, cellHeight, "sales Description", "1", 0, "C", false, 0, "")
+        // pdf.CellFormat(cellWidth, cellHeight, "Total Amount", "1", 0, "C", false, 0, "")
         pdf.Ln(cellHeight) // Move to the next line
 
         // Set font back to the original
         pdf.SetFont("Arial", "B", 14)
 
         // Add data to the table
-        pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s", invoice.NumberInvoice), "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s", invoice.Discount), "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s%%", invoice.PPN11), "1", 0, "C", false, 0, "")
-		totalAmount := fmt.Sprintf("%s", strconv.Itoa(invoice.TotalAmount))
-		pdf.CellFormat(cellWidth, cellHeight, totalAmount, "1", 0, "C", false, 0, "")
+		deliverynumber := fmt.Sprintf("%s", strconv.Itoa(invoice.Sales.DeliveryOrderNumber))
+		pdf.CellFormat(cellWidth, cellHeight, deliverynumber, "1", 0, "C", false, 0, "")
+        pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s", invoice.Sales.DescriptionSale), "1", 0, "C", false, 0, "")
+        // pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s%%", invoice.PPN11), "1", 0, "C", false, 0, "")
+		// totalAmount := fmt.Sprintf("%s", strconv.Itoa(invoice.TotalAmount))
+		// pdf.CellFormat(cellWidth, cellHeight, totalAmount, "1", 0, "C", false, 0, "")
         // pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s", invoice.TotalAmount), "1", 0, "C", false, 0, "")
         pdf.Ln(cellHeight)
 

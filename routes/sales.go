@@ -17,4 +17,5 @@ func SalesRoutes(e *echo.Group) {
 	e.POST("/sale", h.CreateSale)
 	e.DELETE("/sale/:id", h.DeleteSale)
 	e.PATCH("/sale/:id", h.UpdateSale)
+	e.DELETE("/sale/delete-with-associated-data/:id", h.DeleteSaleWithAssociatedData)
 }

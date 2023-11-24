@@ -216,3 +216,15 @@ func (h *handlerSales) DeleteSale(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: data})
 }
+
+func (h *handlerSales) DeleteSaleWithAssociatedData(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+
+	// Call repository method to delete sale and associated data
+	err := h.SalesRepository.DeleteSaleAndAssociatedData(id)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: "Sale and associated data deleted"})
+}

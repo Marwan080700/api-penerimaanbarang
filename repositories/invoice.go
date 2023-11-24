@@ -3,8 +3,9 @@ package repositories
 import (
 	"bytes"
 	"fmt"
-	"github.com/jung-kurt/gofpdf"
 	"pengirimanbarang/models"
+
+	"github.com/jung-kurt/gofpdf"
 
 	"gorm.io/gorm"
 )
@@ -15,6 +16,8 @@ type InvoiceRepository interface {
 	CreateInvoice(invoices models.Invoices) (models.Invoices, error)
 	UpdateInvoice(invoices models.Invoices) (models.Invoices, error)
 	DeleteInvoice(invoices models.Invoices) (models.Invoices, error)
+	DeleteInvoiceAndSales(invoiceID int) error
+    DeleteSale(sales models.Sales) (models.Sales, error)
 	GetSales(ID int) (models.Sales, error)
 	PrintInvoice(ID int) (string, error)
 }
@@ -70,10 +73,33 @@ func (r *repository) GetSales(ID int) (models.Sales, error) {
 	return sales, err
 }
 
+func (r *repository) DeleteInvoiceAndSales(invoiceID int) error {
+    // Fetch the invoice to get the associated sales ID
+    invoice, err := r.GetInvoice(invoiceID)
+    if err != nil {
+        return err
+    }
+
+    // Delete the sales associated with the invoice
+    err = r.db.Delete(&invoice.Sales).Error
+    if err != nil {
+        return err
+    }
+
+    // Delete the invoice itself
+    err = r.db.Delete(&invoice).Error
+    return err
+}
+
+// func (r *repository) DeleteSales(sales models.Sales) (models.Sales, error) {
+//     err := r.db.Delete(&sales).Error
+//     return sales, err
+// }
+
 func (r *repository) PrintInvoice(ID int) (string, error) {
     // Fetch the necessary data for generating the invoice with preloaded Sales and Customer
     var invoice models.Invoices
-    err := r.db.Preload("Sales").Preload("Sales.Customer").First(&invoice, ID).Error
+    err := r.db.Preload("Sales").Preload("Sales.Customer").Preload("SalesDetail").First(&invoice, ID).Error
     if err != nil {
         return "", fmt.Errorf("failed to fetch invoice data: %v", err)
     }

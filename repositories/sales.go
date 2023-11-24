@@ -12,6 +12,11 @@ type SalesRepository interface {
 	CreateSale(sales models.Sales) (models.Sales, error)
 	UpdateSale(sales models.Sales) (models.Sales, error)
 	DeleteSale(sales models.Sales) (models.Sales, error)
+	DeleteSaleAndAssociatedData(ID int) error  // New method to delete sale and associated data
+    GetSalesDetailsBySalesID(salesID int) ([]models.SalesDetail, error)
+
+    // DeleteSalesDetail deletes a sales detail record
+    DeleteSalesDetail(salesDetail models.SalesDetail) (models.SalesDetail, error)
 }
 
 func RepositorySales(db *gorm.DB) *repository {
@@ -48,4 +53,48 @@ func (r *repository) UpdateSale(sales models.Sales) (models.Sales, error) {
 	err := r.db.Save(&sales).Error
 
 	return sales, err
+}
+
+func (r *repository) GetSalesDetailsBySalesID(salesID int) ([]models.SalesDetail, error) {
+    var salesDetail []models.SalesDetail
+    err := r.db.Where("IDSales = ?", salesID).Find(&salesDetail).Error
+
+    return salesDetail, err
+}
+
+
+// DeleteSalesDetail deletes a sales detail record
+func (r *repository) DeleteSalesDetail(salesDetail models.SalesDetail) (models.SalesDetail, error) {
+    err := r.db.Delete(&salesDetail).Error
+
+    return salesDetail, err
+}
+
+
+func (r *repository) DeleteSaleAndAssociatedData(ID int) error {
+	// Get the sale details associated with the sale ID
+	salesDetails, err := r.GetSalesDetailsBySalesID(ID)
+	if err != nil {
+		return err
+	}
+
+	// Delete the sales details
+	for _, sd := range salesDetails {
+		if _, err := r.DeleteSalesDetail(sd); err != nil {
+			return err
+		}
+	}
+
+	// Get the sale by ID
+	sale, err := r.GetSale(ID)
+	if err != nil {
+		return err
+	}
+
+	// Delete the sale
+	if _, err := r.DeleteSale(sale); err != nil {
+		return err
+	}
+
+	return nil
 }
