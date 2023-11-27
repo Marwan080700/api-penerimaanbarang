@@ -18,4 +18,5 @@ func SalesRoutes(e *echo.Group) {
 	e.DELETE("/sale/:id", h.DeleteSale)
 	e.PATCH("/sale/:id", h.UpdateSale)
 	e.DELETE("/sale/delete-with-associated-data/:id", h.DeleteSaleWithAssociatedData)
+	e.PATCH("/sale/cancel/:id", h.CancelSale)
 }

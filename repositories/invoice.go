@@ -19,6 +19,7 @@ type InvoiceRepository interface {
 	DeleteInvoiceAndSales(invoiceID int) error
     DeleteSale(sales models.Sales) (models.Sales, error)
 	GetSales(ID int) (models.Sales, error)
+    CancelInvoice(invoice models.Invoices) (models.Invoices, error)
 	PrintInvoice(ID int) (string, error)
 }
 
@@ -95,6 +96,32 @@ func (r *repository) DeleteInvoiceAndSales(invoiceID int) error {
 //     err := r.db.Delete(&sales).Error
 //     return sales, err
 // }
+
+func (r *repository) CancelInvoice(invoice models.Invoices) (models.Invoices, error) {
+    // Update the status of the invoice to 1
+    invoice.Status = 1
+
+    // Get the associated sales
+    sales, err := r.GetSales(invoice.Sales.ID)
+    if err != nil {
+        return models.Invoices{}, err
+    }
+
+    // Update the status of the sales to 1
+    sales.Status = 1
+    _, err = r.UpdateSale(sales)  // <-- Corrected method name
+    if err != nil {
+        return models.Invoices{}, err
+    }
+
+    // Call the UpdateInvoice method in the repository
+    updatedInvoice, err := r.UpdateInvoice(invoice)
+    if err != nil {
+        return models.Invoices{}, err
+    }
+
+    return updatedInvoice, nil
+}
 
 func (r *repository) PrintInvoice(ID int) (string, error) {
     // Fetch the necessary data for generating the invoice with preloaded Sales and Customer

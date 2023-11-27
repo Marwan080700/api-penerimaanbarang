@@ -14,6 +14,7 @@ type SalesRepository interface {
 	DeleteSale(sales models.Sales) (models.Sales, error)
 	DeleteSaleAndAssociatedData(ID int) error  // New method to delete sale and associated data
     GetSalesDetailsBySalesID(salesID int) ([]models.SalesDetail, error)
+	CancelSale(sale models.Sales) (models.Sales, error)
 
     // DeleteSalesDetail deletes a sales detail record
     DeleteSalesDetail(salesDetail models.SalesDetail) (models.SalesDetail, error)
@@ -97,4 +98,17 @@ func (r *repository) DeleteSaleAndAssociatedData(ID int) error {
 	}
 
 	return nil
+}
+
+func (r *repository) CancelSale(sale models.Sales) (models.Sales, error) {
+    // Assuming 1 means canceled, update the status
+    sale.Status = 1
+
+    // Call the UpdateSale method to persist the changes
+    updatedSale, err := r.UpdateSale(sale)
+    if err != nil {
+        return models.Sales{}, err
+    }
+
+    return updatedSale, nil
 }

@@ -17,4 +17,5 @@ type Sales struct {
     CreatedAt         time.Time `json:"created_at"` // corrected tag
     UpdatedBy         string    `json:"updated_by" gorm:"type:varchar(255)"`
     UpdatedAt         time.Time `json:"updated_at"` // corrected tag
+    Status            int       `json:"status" gorm:"default:0"`
 }

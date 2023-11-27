@@ -1,11 +1,11 @@
 package routes
 
 import (
-    "pengirimanbarang/handlers"
-    "pengirimanbarang/pkg/mysql"
-    "pengirimanbarang/repositories"
+	"pengirimanbarang/handlers"
+	"pengirimanbarang/pkg/mysql"
+	"pengirimanbarang/repositories"
 
-    "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
 )
 
 func InvoiceRoutes(e *echo.Group) {
@@ -18,5 +18,6 @@ func InvoiceRoutes(e *echo.Group) {
     e.POST("/invoice", h.CreateInvoice)
     e.DELETE("/invoice/:id", h.DeleteInvoice)
     e.PATCH("/invoice/:id", h.UpdateInvoice)
+    e.PATCH("/invoice/cancel/:id", h.CancelInvoice)
     e.GET("/invoices/print/:id", h.PrintInvoice)
 }

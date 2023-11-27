@@ -272,6 +272,29 @@ func (h *handlerInvoice) DeleteInvoice(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: "Invoice, Sales, and SalesDetails deleted successfully"})
 }
 
+func (h *handlerInvoice) CancelInvoice(c echo.Context) error {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as a number."})
+    }
+
+    // Get the invoice details
+    invoice, err := h.InvoiceRepository.GetInvoice(id)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    // Call the CancelInvoice method in the repository
+    updatedInvoice, err := h.InvoiceRepository.CancelInvoice(invoice)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+    }
+
+    return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: updatedInvoice})
+}
+
+
+
 func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
     id, err := strconv.Atoi(c.Param("id"))
     if err != nil {
