@@ -74,6 +74,7 @@ func (r *repository) GetSales(ID int) (models.Sales, error) {
 	return sales, err
 }
 
+
 func (r *repository) DeleteInvoiceAndSales(invoiceID int) error {
     // Fetch the invoice to get the associated sales ID
     invoice, err := r.GetInvoice(invoiceID)

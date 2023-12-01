@@ -14,6 +14,7 @@ type ProductRepository interface {
 	UpdateProduct(product models.Product) (models.Product, error)
 	DeleteProduct(product models.Product) (models.Product, error)
 	GetProductsByCategoryID(categoryID int) ([]models.Product, error)
+
 }
 
 func RepositoryProduct(db *gorm.DB) *repository {
@@ -70,3 +71,4 @@ func (r *repository) GetProductsByCategoryID(categoryID int) ([]models.Product, 
 
     return products, err
 }
+

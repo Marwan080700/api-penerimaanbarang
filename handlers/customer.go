@@ -90,8 +90,6 @@ func (h *handlerCustomer) CreateCustomer(c echo.Context) error {
     return c.JSON(http.StatusOK, response)
 }
 
-
-
 func (h *handlerCustomer) UpdateCustomer(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -168,4 +166,28 @@ func (h *handlerCustomer) DeleteCustomer(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: data})
+}
+
+func (h *handlerCustomer) CancelCustomer(c echo.Context) error {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as a number."})
+    }
+
+    // Get the sale details
+    customer, err := h.CustomerRepository.GetCustomer(id)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    // Update the Status field to 1 (assuming 1 means canceled)
+    customer.Status = 1
+
+    // Call the UpdateSale method in the repository
+    updatedCustomer, err := h.CustomerRepository.UpdateCustomer(customer)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: updatedCustomer})
 }

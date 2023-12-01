@@ -13,6 +13,7 @@ type ProductCategoriesRepository interface {
 	UpdateProductCategories(productcategories models.ProductCategories) (models.ProductCategories, error)
 	DeleteProductCategories(productcategories models.ProductCategories) (models.ProductCategories, error)
 	DeleteProductsByCategoryID(categoryID int) error
+	CancelProductCategories(productCategories models.ProductCategories) (models.ProductCategories, error)
 }
 
 func RepositoryProductCategories(db *gorm.DB) *repository {
@@ -55,4 +56,17 @@ func (r *repository) DeleteProductsByCategoryID(categoryID int) error {
     // Assuming products have a foreign key to the product category
     err := r.db.Where("id_category_product = ?", categoryID).Delete(&models.Product{}).Error
     return err
+}
+
+func (r *repository) CancelProductCategories(productCategories models.ProductCategories) (models.ProductCategories, error) {
+    // Assuming 1 means canceled, update the status
+    productCategories.Status = 1
+
+    // Call the UpdateSale method to persist the changes
+    updatedProductCategories, err := r.UpdateProductCategories(productCategories)
+    if err != nil {
+        return models.ProductCategories{}, err
+    }
+
+    return updatedProductCategories, nil
 }

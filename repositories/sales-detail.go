@@ -12,6 +12,7 @@ type SalesDetailRepository interface {
 	CreateSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
 	UpdateSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
 	// DeleteSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
+	GetSalesDetailBySales(IDSales int) ([]models.SalesDetail, error)
 }
 
 func RepositorySalesDetail(db *gorm.DB) *repository {
@@ -48,4 +49,11 @@ func (r *repository) UpdateSalesDetail(salesdetail models.SalesDetail) (models.S
 	err := r.db.Save(&salesdetail).Error
 
 	return salesdetail, err
+}
+
+func (r *repository) GetSalesDetailBySales(IDSales int) ([]models.SalesDetail, error) {
+    var salesDetail []models.SalesDetail
+    err := r.db.Where("id_sales = ?", IDSales).Find(&salesDetail).Error
+
+    return salesDetail, err
 }

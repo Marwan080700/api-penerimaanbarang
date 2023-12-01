@@ -17,4 +17,5 @@ func CustomerRoutes(e *echo.Group) {
 	e.POST("/customer", h.CreateCustomer)
 	e.DELETE("/customer/:id", h.DeleteCustomer)
 	e.PATCH("/customer/:id", h.UpdateCustomer)
+	e.PATCH("/customer/cancel/:id", h.CancelCustomer)
 }

@@ -112,3 +112,4 @@ func (r *repository) CancelSale(sale models.Sales) (models.Sales, error) {
 
     return updatedSale, nil
 }
+

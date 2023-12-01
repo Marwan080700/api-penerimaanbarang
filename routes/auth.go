@@ -15,4 +15,7 @@ func AuthRoutes(e *echo.Group) {
 	e.POST("/register", h.Register)
 	e.POST("/login", h.Login)
 	e.GET("/check", h.CheckAuth)
+	e.GET("/users", h.FindUser)
+	e.GET("/user/:id", h.GetUser)
+	e.PATCH("/user/:id", h.UpdateUser)
 }

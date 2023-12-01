@@ -7,7 +7,7 @@ type SalesDetail struct {
     Sales     Sales     `json:"-" gorm:"foreignKey:IDSales"`
     IDSales   int       `json:"sale_id" form:"sale_id" gorm:"type:int"`
     Product   Product   `json:"-" gorm:"foreignKey:IDProduct"`
-    IDProduct int       `json:"-" form:"product_id" gorm:"type:int"`
+    IDProduct int       `json:"product_id" form:"product_id" gorm:"type:int"`
     Qty       int       `json:"qty" form:"qty" gorm:"type:int"`
     Price     int       `json:"price" form:"price" gorm:"type:int"`
     Amount    int       `json:"amount" form:"amount" gorm:"type:int"`

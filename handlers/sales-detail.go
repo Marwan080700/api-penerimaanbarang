@@ -56,31 +56,49 @@ func (h *handlerSalesDetail) GetSalesDetail(c echo.Context) error {
 		Data:   salesdetail})
 }
 
+func (h *handlerSalesDetail) GetSalesDetailBySales(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	fmt.Println("sales idnya", id)
+
+
+    salesDetails, err := h.SalesDetailRepository.GetSalesDetailBySales(id)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    return c.JSON(http.StatusOK, dto.SuccesResult{
+        Status: "Success",
+        Data:   salesDetails,
+    })
+}
+
+
 func (h *handlerSalesDetail) CreateSalesDetail(c echo.Context) error {
 	salesid, err := strconv.Atoi(c.FormValue("sale_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value sale id"})
 	}
 
 	productid, err := strconv.Atoi(c.FormValue("product_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value product id"})
 	}
 
 	qty, err := strconv.Atoi(c.FormValue("qty"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value product qty"})
 	}
 
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid price value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid price value price"})
 	}
 
-	amount, err := strconv.Atoi(c.FormValue("amount"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid product_category_id value"})
-	}
+	// amount, err := strconv.Atoi(c.FormValue("amount"))
+	// if err != nil {
+	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid product_category_id value"})
+	// }
+	totalAmount := qty * price
 
 
 	request := salesdetaildto.SalesDetailRequest{
@@ -88,7 +106,7 @@ func (h *handlerSalesDetail) CreateSalesDetail(c echo.Context) error {
 		IDProduct: productid,
 		Qty: qty,
 		Price: price,
-		Amount: amount,
+		Amount: totalAmount,
 		Desc: c.FormValue("desc"),
 		Status: c.FormValue("status"),
     }
@@ -128,27 +146,27 @@ func (h *handlerSalesDetail) UpdateSalesDetail(c echo.Context) error {
 
 	salesid, err := strconv.Atoi(c.FormValue("sale_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value sale id"})
 	}
 
 	productid, err := strconv.Atoi(c.FormValue("product_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value product id"})
 	}
 
 	qty, err := strconv.Atoi(c.FormValue("qty"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value qty"})
 	}
 
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid price value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid price value price"})
 	}
 
 	amount, err := strconv.Atoi(c.FormValue("amount"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid product_category_id value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid amount value"})
 	}
 
 	request := salesdetaildto.SalesDetailRequest{

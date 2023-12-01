@@ -5,7 +5,7 @@ import "time"
 type Sales struct {
     ID                int       `json:"id" gorm:"primaryKey;autoIncrement"`
     DeliveryOrderNumber int    `json:"delivery_order_number" form:"delivery_order_number" gorm:"type:int"`
-    IDCustomer        int       `json:"-" form:"customer_id"`
+    IDCustomer        int       `json:"customer_id" form:"customer_id"`
     Customer          Customer  `json:"-" gorm:"foreignKey:IDCustomer"`
     IDUser            int       `json:"-" form:"user_id"`
     User              User      `json:"-" gorm:"foreignKey:IDUser"`

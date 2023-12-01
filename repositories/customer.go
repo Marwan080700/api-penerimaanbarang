@@ -12,6 +12,7 @@ type CustomerRepository interface {
 	CreateCustomer(customer models.Customer) (models.Customer, error)
 	UpdateCustomer(customer models.Customer) (models.Customer, error)
 	DeleteCustomer(customer models.Customer) (models.Customer, error)
+	CancelCustomer(customer models.Customer) (models.Customer, error)
 }
 
 func RepositoryCustomer(db *gorm.DB) *repository {
@@ -51,3 +52,17 @@ func (r *repository) UpdateCustomer(customer models.Customer) (models.Customer, 
 
 	return customer, err
 }
+
+func (r *repository) CancelCustomer(customer models.Customer) (models.Customer, error) {
+    // Assuming 1 means canceled, update the status
+    customer.Status = 1
+
+    // Call the UpdateSale method to persist the changes
+    updatedCustomer, err := r.UpdateCustomer(customer)
+    if err != nil {
+        return models.Customer{}, err
+    }
+
+    return updatedCustomer, nil
+}
+

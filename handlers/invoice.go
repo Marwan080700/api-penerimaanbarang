@@ -293,8 +293,6 @@ func (h *handlerInvoice) CancelInvoice(c echo.Context) error {
     return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: updatedInvoice})
 }
 
-
-
 func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
     id, err := strconv.Atoi(c.Param("id"))
     if err != nil {

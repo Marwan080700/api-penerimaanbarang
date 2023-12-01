@@ -114,7 +114,6 @@ func (h *handlerProduct) CreateProduct(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-
 func (h *handlerProduct) UpdateProduct(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

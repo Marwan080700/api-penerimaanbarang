@@ -14,4 +14,5 @@ type Customer struct {
     CreatedAt        time.Time `json:"-`
     UpdatedBy        string    `json:"updated_by" gorm:"type:varchar(255)"`
     UpdatedAt        time.Time `json:"-`
+	Status            int       `json:"status" gorm:"default:0"`
 }

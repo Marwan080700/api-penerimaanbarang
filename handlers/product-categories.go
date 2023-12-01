@@ -83,8 +83,6 @@ func (h *handlerProductCategories) CreateProductCategories(c echo.Context) error
     return c.JSON(http.StatusOK, response)
 }
 
-
-
 func (h *handlerProductCategories) UpdateProductCategories(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -147,4 +145,28 @@ func (h *handlerProductCategories) DeleteProductCategories(c echo.Context) error
     }
 
     return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: data})
+}
+
+func (h *handlerProductCategories) CancelProductCategories(c echo.Context) error {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as a number."})
+    }
+
+    // Get the sale details
+    productCategories, err := h.ProductCategoriesRepository.GetProductCategories(id)
+    if err != nil {
+        return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    // Update the Status field to 1 (assuming 1 means canceled)
+    productCategories.Status = 1
+
+    // Call the UpdateSale method in the repository
+    updatedProductCategories, err := h.ProductCategoriesRepository.UpdateProductCategories(productCategories)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: updatedProductCategories})
 }

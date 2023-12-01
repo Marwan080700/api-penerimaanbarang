@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"fmt"
+	"strconv"
 	authdto "pengirimanbarang/dto/auth"
 	dto "pengirimanbarang/dto/result"
 	"pengirimanbarang/models"
@@ -67,8 +68,6 @@ func (h *handlerAuth) Register(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: dataRegister{User: data}})
 }
 
-
-
 // Login
 func (h *handlerAuth) Login(c echo.Context) error {
 	request := new(authdto.LoginRequest)
@@ -104,8 +103,6 @@ func (h *handlerAuth) Login(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: dataLogin{User: loginResponse}})
 }
 
-
-
 // CheckAuth
 func (h *handlerAuth) CheckAuth(c echo.Context) error {
 	// Retrieve user ID from the context (assuming it's stored in the session or another mechanism)
@@ -127,4 +124,77 @@ func (h *handlerAuth) CheckAuth(c echo.Context) error {
 func getUserIdFromContext(c echo.Context) int {
 
 	return 0
+}
+
+func (h *handlerAuth) FindUser(c echo.Context) error {
+	user, err := h.AuthRepository.FindUser()
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{
+		Status: "Success",
+		Data:   user})
+}
+
+func (h *handlerAuth) GetUser(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	user, err := h.AuthRepository.GetUser(id)
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{
+			Status:  "Error",
+			Message: err.Error()})
+	}
+
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{
+		Status: "Success",
+		Data:   user})
+}
+
+func (h *handlerAuth) UpdateUser(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as number."})
+	}
+
+	request := authdto.AuthRequest{
+		// UserName: c.FormValue("username"),
+		// Name: c.FormValue("name"),
+		// Password: c.FormValue("password"),
+        Role: c.FormValue("role"),
+        Status: c.FormValue("status"),
+	}
+
+	// validation := validator.New()
+	// err = validation.Struct(request)
+	// if err != nil {
+	// 	return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	// }
+
+	user, err := h.AuthRepository.GetUser(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if request.Role != "" {
+		user.Role = request.Role
+	}
+
+	if request.Status != "" {
+		user.Status = request.Status
+	}
+
+
+	data, err := h.AuthRepository.UpdateUser(user)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: data})
 }

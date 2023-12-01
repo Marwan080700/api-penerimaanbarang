@@ -59,22 +59,22 @@ func (h *handlerSales) GetSale(c echo.Context) error {
 func (h *handlerSales) CreateSale(c echo.Context) error {
 	deliveryordernumber, err := strconv.Atoi(c.FormValue("delivery_order_number"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value delivery"})
 	}
 
 	customerid, err := strconv.Atoi(c.FormValue("customer_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value customer"})
 	}
 
 	userid, err := strconv.Atoi(c.FormValue("user_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value userid"})
 	}
 
 	totalamount, err := strconv.Atoi(c.FormValue("total_amount"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value totatamount"})
 	}
 
 	request := salesdto.SalesRequest{
@@ -113,7 +113,6 @@ func (h *handlerSales) CreateSale(c echo.Context) error {
     return c.JSON(http.StatusOK, response)
 }
 
-
 func (h *handlerSales) UpdateSale(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -122,22 +121,22 @@ func (h *handlerSales) UpdateSale(c echo.Context) error {
 
 	deliveryordernumber, err := strconv.Atoi(c.FormValue("delivery_order_number"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value delivery number"})
 	}
 
 	customerid, err := strconv.Atoi(c.FormValue("customer_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value customer id"})
 	}
 
 	userid, err := strconv.Atoi(c.FormValue("user_id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value user id"})
 	}
 
 	totalamount, err := strconv.Atoi(c.FormValue("total_amount"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value total amount"})
 	}
 
 	request := salesdto.SalesRequest{
@@ -255,3 +254,6 @@ func (h *handlerSales) CancelSale(c echo.Context) error {
 
     return c.JSON(http.StatusOK, dto.SuccesResult{Status: "success", Data: updatedSale})
 }
+
+
+

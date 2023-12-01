@@ -14,6 +14,7 @@ func SalesDetailRoutes(e *echo.Group) {
 
 	e.GET("/sales-details", h.FindSalesDetail)
 	e.GET("/sales-detail/:id", h.GetSalesDetail)
+	e.GET("/sales/sales-details/:id", h.GetSalesDetailBySales)
 	e.POST("/sales-detail", h.CreateSalesDetail)
 	// e.DELETE("/sales-detail/:id", h.DeleteSalesDetail)
 	e.PATCH("/sales-detail/:id", h.UpdateSalesDetail)
