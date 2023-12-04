@@ -20,4 +20,6 @@ func InvoiceRoutes(e *echo.Group) {
     e.PATCH("/invoice/:id", h.UpdateInvoice)
     e.PATCH("/invoice/cancel/:id", h.CancelInvoice)
     e.GET("/invoices/print/:id", h.PrintInvoice)
+    e.PATCH("/invoice/approve1/:id", h.UpdateApprove1)
+    e.PATCH("/invoice/approve2/:id", h.UpdateApprove2)
 }

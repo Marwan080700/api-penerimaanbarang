@@ -68,28 +68,15 @@ func (h *handlerInvoice) CreateInvoice(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid user_id value"})
 	}
 
-	// Fetch sales data using the provided saleID
-	salesData, err := h.InvoiceRepository.GetSales(saleID)
+	SubTotal, err := strconv.Atoi(c.FormValue("sub_total"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: "Failed to fetch sales data"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid user_id value"})
 	}
 
-	// Calculate SubTotal based on salesData.AmountTotal
-	subTotal := salesData.AmountTotal
-
-	// Apply Discount if provided
-	if discountStr := c.FormValue("discount"); discountStr != "" {
-		discount, err := strconv.Atoi(discountStr)
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid discount value"})
-		}
-		subTotal -= discount
+	totalAmount, err := strconv.Atoi(c.FormValue("sub_total"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid user_id value"})
 	}
-
-	// Automatically set PPN to 11%
-	ppnPercentage := 11
-	ppnAmount := (ppnPercentage * subTotal) / 100
-	subTotal += ppnAmount
 
 	invoice := models.Invoices{
 		IDSales:                saleID,
@@ -97,12 +84,13 @@ func (h *handlerInvoice) CreateInvoice(c echo.Context) error {
 		NumberInvoice:          c.FormValue("invoice_number"),
 		DateInvoice:            c.FormValue("invoice_date"),
 		DueDate:                c.FormValue("due_date"),
-		SubTotal:               salesData.AmountTotal,
+		SubTotal:               SubTotal,
 		Discount:               c.FormValue("discount"),
-		PPN11:                  strconv.Itoa(ppnPercentage), // Set PPN to 11%
-		TotalAmount:            subTotal,
+		PPN11:                  c.FormValue("ppn_11"),// Set PPN to 11%
+		TotalAmount:            totalAmount,
 		NoFakturPajak:          c.FormValue("no_faktur_pajak"),
 		NoFakturPajakPengganti: c.FormValue("no_faktur_pajak_pengganti"),
+		InvoiceDesc:			c.FormValue("invoice_description"),
 		InvoiceStatus:          c.FormValue("invoice_status"),
 		Approve1:               c.FormValue("approve_1"),
 		Approve1Date:           c.FormValue("approve_1_date"),
@@ -130,12 +118,12 @@ func (h *handlerInvoice) UpdateInvoice(c echo.Context) error {
 
 	subtotal, err := strconv.Atoi(c.FormValue("sub_total"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid sub total value"})
 	}
 
 	totalamount, err := strconv.Atoi(c.FormValue("total_amount"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid total amount value"})
 	}
 
 	request := invoicedto.InvoiceRequest{
@@ -148,6 +136,7 @@ func (h *handlerInvoice) UpdateInvoice(c echo.Context) error {
 		TotalAmount: totalamount,
 		NoFakturPajak: c.FormValue("no_faktur_pajak"),
 		NoFakturPajakPengganti: c.FormValue("no_faktur_pajak_pengganti"),
+		InvoiceDesc:			c.FormValue("invoice_description"),
 		InvoiceStatus: c.FormValue("invoice_status"),
 		Approve1: c.FormValue("approve_1"),
 		Approve1Date: c.FormValue("approve_1_date"),
@@ -249,6 +238,103 @@ func (h *handlerInvoice) UpdateInvoice(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: data})
 }
 
+func (h *handlerInvoice) UpdateApprove1(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as number."})
+	}
+
+	request := invoicedto.InvoiceRequest{
+		Approve1: c.FormValue("approve_1"),
+		Approve1Date: c.FormValue("approve_1_date"),
+		Approve1Desc: c.FormValue("approve_1_desc"),
+
+    }
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	invoice, err := h.InvoiceRepository.GetInvoice(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if request.Approve1 != "" {
+		invoice.Approve1 = request.Approve1
+	}
+
+	if request.Approve1Date != "" {
+		invoice.Approve1Date = request.Approve1Date
+	}
+
+	if request.Approve1Desc != "" {
+		invoice.Approve1Desc = request.Approve1Desc
+	}
+
+	data, err := h.InvoiceRepository.UpdateApprove1(invoice)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: data})
+}
+
+func (h *handlerInvoice) UpdateApprove2(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as number."})
+	}
+
+	request := invoicedto.InvoiceRequest{
+		Approve2: c.FormValue("approve_2"),
+		Approve2Date: c.FormValue("approve_2_date"),
+		Approve2Desc: c.FormValue("approve_2_desc"),
+
+    }
+
+	validation := validator.New()
+	err = validation.Struct(request)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	invoice, err := h.InvoiceRepository.GetInvoice(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	if request.Approve2 != "" {
+		invoice.Approve2 = request.Approve2
+	}
+
+	if request.Approve2Date != "" {
+		invoice.Approve2Date = request.Approve2Date
+	}
+
+	if request.Approve2Desc != "" {
+		invoice.Approve2Desc = request.Approve2Desc
+	}
+
+	data, err := h.InvoiceRepository.UpdateApprove2(invoice)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: err.Error()})
+	}
+
+	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: data})
+}
+
+
 func (h *handlerInvoice) DeleteInvoice(c echo.Context) error {
     id, _ := strconv.Atoi(c.Param("id"))
 
@@ -256,11 +342,6 @@ func (h *handlerInvoice) DeleteInvoice(c echo.Context) error {
     invoice, err := h.InvoiceRepository.GetInvoice(id)
     if err != nil {
         return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
-    }
-    // Delete the sales
-    _, err = h.InvoiceRepository.DeleteSale(invoice.Sales)
-    if err != nil {
-        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
     }
 
     // Delete the invoice

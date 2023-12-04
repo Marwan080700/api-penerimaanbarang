@@ -20,6 +20,8 @@ type InvoiceRepository interface {
     DeleteSale(sales models.Sales) (models.Sales, error)
 	GetSales(ID int) (models.Sales, error)
     CancelInvoice(invoice models.Invoices) (models.Invoices, error)
+    UpdateApprove1(invoices models.Invoices) (models.Invoices, error)
+    UpdateApprove2(invoices models.Invoices) (models.Invoices, error)
 	PrintInvoice(ID int) (string, error)
 }
 
@@ -67,6 +69,18 @@ func (r *repository) UpdateInvoice(invoices models.Invoices) (models.Invoices, e
 	return invoices, err
 }
 
+func (r *repository) UpdateApprove1(invoices models.Invoices) (models.Invoices, error) {
+	err := r.db.Save(&invoices).Error
+
+	return invoices, err
+}
+
+func (r *repository) UpdateApprove2(invoices models.Invoices) (models.Invoices, error) {
+	err := r.db.Save(&invoices).Error
+
+	return invoices, err
+}
+
 func (r *repository) GetSales(ID int) (models.Sales, error) {
 	var sales models.Sales
 	err := r.db.First(&sales, ID).Error
@@ -101,19 +115,6 @@ func (r *repository) DeleteInvoiceAndSales(invoiceID int) error {
 func (r *repository) CancelInvoice(invoice models.Invoices) (models.Invoices, error) {
     // Update the status of the invoice to 1
     invoice.Status = 1
-
-    // Get the associated sales
-    sales, err := r.GetSales(invoice.Sales.ID)
-    if err != nil {
-        return models.Invoices{}, err
-    }
-
-    // Update the status of the sales to 1
-    sales.Status = 1
-    _, err = r.UpdateSale(sales)  // <-- Corrected method name
-    if err != nil {
-        return models.Invoices{}, err
-    }
 
     // Call the UpdateInvoice method in the repository
     updatedInvoice, err := r.UpdateInvoice(invoice)
