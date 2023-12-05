@@ -57,6 +57,23 @@ func (h *handlerInvoice) GetInvoice(c echo.Context) error {
 		Data:   invoice})
 }
 
+
+func (h *handlerInvoice) GetSalesDetailBySale(c echo.Context) error {
+	id, _ := strconv.Atoi(c.Param("id"))
+	fmt.Println("sales idnya", id)
+
+
+    salesDetails, err := h.InvoiceRepository.GetSalesDetailBySale(id)
+    if err != nil {
+        return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "failed", Message: err.Error()})
+    }
+
+    return c.JSON(http.StatusOK, dto.SuccesResult{
+        Status: "Success",
+        Data:   salesDetails,
+    })
+}
+
 func (h *handlerInvoice) CreateInvoice(c echo.Context) error {
 	saleID, err := strconv.Atoi(c.FormValue("sale_id"))
 	if err != nil {
@@ -334,7 +351,6 @@ func (h *handlerInvoice) UpdateApprove2(c echo.Context) error {
 	return c.JSON(http.StatusOK, dto.SuccesResult{Status: "Success", Data: data})
 }
 
-
 func (h *handlerInvoice) DeleteInvoice(c echo.Context) error {
     id, _ := strconv.Atoi(c.Param("id"))
 
@@ -385,8 +401,14 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
     }
 
+	salesDetails, err := h.InvoiceRepository.GetSalesDetailBySale(invoice.Sales.ID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to fetch sales details"})
+	}
+
     // Check if both approve_1 and approve_2 are okay
     if invoice.Approve1 == "ok" && invoice.Approve2 == "ok" {
+		
         // Generate PDF
         marginX := 10.0
         marginY := 20.0
@@ -395,13 +417,12 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         pdf.AddPage()
         pdf.SetFont("Arial", "B", 14)
 
-		pageWidth := 175.0 
-		xCoordinate := pageWidth  / 2
+        pageWidth := 175.0
+        xCoordinate := pageWidth / 2
 
-		pdf.Ln(5)
-		pdf.ImageOptions("asset/logo-arna.png", xCoordinate, 0, 35, 25, false, 
-		gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
-	
+        pdf.Ln(5)
+        pdf.ImageOptions("asset/logo-arna.png", xCoordinate, 0, 35, 25, false,
+            gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
         // Center "Invoice" and "PT Arwana Ceramics" at the top
         pdf.CellFormat(0, 10, "Invoice", "", 0, "C", false, 0, "")
@@ -415,27 +436,24 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
 
         // Create a new line and add "Kepada yth" to the left
         // Add "Kepada yth" to the left
-		pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("Kepada yth: %s", invoice.Sales.Customer.NameCustomer), "", 0, "L", false, 0, "")
-		fmt.Println("Sales", invoice.Sales)
-		fmt.Println("customer", invoice.Sales.Customer)
-
+        pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("Kepada yth: %s", invoice.Sales.Customer.NameCustomer), "", 0, "L", false, 0, "")
 
         // Add "Invoice Number" to the right in the same line
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("Invoice Number: %s", invoice.NumberInvoice), "", 0, "R", false, 0, "")
         pdf.Ln(lineHeight)
 
         // Add "Date" to the right in the same line
-		pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
+        pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("Date: %s", invoice.DateInvoice), "", 0, "R", false, 0, "")
         pdf.Ln(lineHeight)
 
         // Add "No. Faktur Pajak" to the right in the same line
-		pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
+        pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("No. Faktur Pajak: %s", invoice.NoFakturPajak), "", 0, "R", false, 0, "")
         pdf.Ln(lineHeight)
 
         // Add "No. Faktur Pajak Pengganti" to the right in the same line
-		pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
+        pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("No.Faktur Pajak Pengganti: %s", invoice.NoFakturPajakPengganti), "", 0, "R", false, 0, "")
         pdf.Ln(2 * lineHeight) // Increased space after this line
 
@@ -443,52 +461,87 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         // pdf.Line(marginX, pdf.GetY(), 210-marginX, pdf.GetY())
         // pdf.Ln(lineHeight)
 
-        // Add a table with column headers
-        pdf.SetFont("Arial", "B", 12)
+		// Add a table with column headers
+		pdf.SetFont("Arial", "B", 12)
 
-        // Set the width and height of each cell in the table
-        cellWidth = 95.0
-        cellHeight := 10.0
+		// Set the width and height of each cell in the table
+		cellWidth = 50.0
+		cellHeight := 10.0
 
-        pdf.CellFormat(cellWidth, cellHeight, "Delivery Order Number", "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, "Quantity", "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, "sales Description", "1", 0, "C", false, 0, "")
-        // pdf.CellFormat(cellWidth, cellHeight, "Total Amount", "1", 0, "C", false, 0, "")
-        pdf.Ln(cellHeight) // Move to the next line
+		pdf.CellFormat(30.0, cellHeight, "No Order", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(cellWidth, cellHeight, "Name Product", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(30.0, cellHeight, "Qty", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(30.0, cellHeight, "Price", "1", 0, "C", false, 0, "")
+		pdf.CellFormat(cellWidth, cellHeight, "Total", "1", 0, "C", false, 0, "")
+		pdf.Ln(cellHeight) // Move to the next line
 
-        // Set font back to the original
-        pdf.SetFont("Arial", "B", 14)
+		for _, salesDetail := range salesDetails {
+			// If there is not enough space for the next row, start a new page
+			if pdf.GetY()+cellHeight > 280.0 { // Adjust this value based on your layout
+				pdf.AddPage()
+				pdf.Ln(cellHeight) // Move to the next line
+			}
 
-        // Add data to the table
-		deliverynumber := fmt.Sprintf("%s", strconv.Itoa(invoice.Sales.DeliveryOrderNumber))
-		pdf.CellFormat(cellWidth, cellHeight, deliverynumber, "1", 0, "C", false, 0, "")
-        pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s", invoice.Sales.DescriptionSale), "1", 0, "C", false, 0, "")
-        // pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s%%", invoice.PPN11), "1", 0, "C", false, 0, "")
-		// totalAmount := fmt.Sprintf("%s", strconv.Itoa(invoice.TotalAmount))
-		// pdf.CellFormat(cellWidth, cellHeight, totalAmount, "1", 0, "C", false, 0, "")
-        // pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%s", invoice.TotalAmount), "1", 0, "C", false, 0, "")
+			// Add data to the table
+			deliveryNumber := fmt.Sprintf("%d", invoice.Sales.DeliveryOrderNumber)
+			pdf.CellFormat(30.0, cellHeight, deliveryNumber, "1", 0, "C", false, 0, "")
+			pdf.CellFormat(cellWidth, cellHeight, salesDetail.Product.NameProduct, "1", 0, "C", false, 0, "")
+			quantity := fmt.Sprintf("%d", salesDetail.Qty)
+			pdf.CellFormat(30.0, cellHeight, quantity, "1", 0, "C", false, 0, "")
+			price := fmt.Sprintf("%d", salesDetail.Product.Price)
+			pdf.CellFormat(30.0, cellHeight, price, "1", 0, "C", false, 0, "")
+			Total := fmt.Sprintf("%d", invoice.Sales.AmountTotal)
+			pdf.CellFormat(cellWidth, cellHeight, Total, "1", 0, "C", false, 0, "")
+			pdf.Ln(cellHeight) // Move to the next line
+		}
+		pdf.Ln(cellHeight) 
+
+
+
+        // pdf.CellFormat(cellWidth, cellHeight, fmt.Sprintf("%d", invoice.Sales.SalesDetail[0].Qty), "1", 0, "C", false, 0, "")
         pdf.Ln(cellHeight)
+		// Move to the bottom of the page
 
-        // Draw a line after the table
-        pdf.Line(marginX, pdf.GetY(), 210-marginX, pdf.GetY())
-        pdf.Ln(lineHeight)
+		width := 95.0 // Adjust the width based on your layout
+		height := 5.0 // Adjust the line height based on your layout
 
-        // Output the PDF as a response
-        err = pdf.Output(c.Response().Writer)
-        if err != nil {
-            return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to generate PDF"})
-        }
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		subtotal := fmt.Sprintf("%d", invoice.SubTotal)
+		pdf.CellFormat(width, height, fmt.Sprintf("Subtotal: %s", subtotal), "", 0, "R", false, 0, "")
+		pdf.Ln(lineHeight)
 
-        c.Response().Header().Set("Content-Type", "application/pdf")
-        c.Response().Header().Set("Content-Disposition", "inline; filename=invoice.pdf")
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		discount := fmt.Sprintf("%s", invoice.Discount) // Assuming Discount is already a percentage
+		pdf.CellFormat(width, height, fmt.Sprintf("Discount: %s", discount), "", 0, "R", false, 0, "")
+		pdf.Ln(lineHeight)
 
-        fmt.Printf("Invoice %d PDF generated and shown successfully!\n", id)
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		ppn := "11%" // Hardcoded as 11%
+		pdf.CellFormat(width, height, fmt.Sprintf("Ppn: %s", ppn), "", 0, "R", false, 0, "")
+		pdf.Ln(lineHeight)
 
-        return nil
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		grandtotal := fmt.Sprintf("%d", invoice.TotalAmount)
+		pdf.CellFormat(width, height, fmt.Sprintf("Grand Total: %s", grandtotal), "", 0, "R", false, 0, "")
+		pdf.Ln(lineHeight)
+
+		err = pdf.Output(c.Response().Writer)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to generate PDF"})
+		}
+	
+		c.Response().Header().Set("Content-Type", "application/pdf")
+		c.Response().Header().Set("Content-Disposition", "inline; filename=invoice.pdf")
+	
+		fmt.Printf("Invoice %d PDF generated and shown successfully!\n", id)
+	
+		return nil
     }
 
     return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: "Invoice is not approved for showing PDF."})
 }
+
+
 
 
 

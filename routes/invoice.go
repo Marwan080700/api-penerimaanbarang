@@ -16,6 +16,7 @@ func InvoiceRoutes(e *echo.Group) {
     e.GET("/invoices", h.FindInvoices)
     e.GET("/invoice/:id", h.GetInvoice)
     e.POST("/invoice", h.CreateInvoice)
+    e.GET("/invoice/product/:id", h.GetSalesDetailBySale)
     e.DELETE("/invoice/:id", h.DeleteInvoice)
     e.PATCH("/invoice/:id", h.UpdateInvoice)
     e.PATCH("/invoice/cancel/:id", h.CancelInvoice)

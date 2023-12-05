@@ -19,6 +19,8 @@ type InvoiceRepository interface {
 	DeleteInvoiceAndSales(invoiceID int) error
     DeleteSale(sales models.Sales) (models.Sales, error)
 	GetSales(ID int) (models.Sales, error)
+    GetProductInvoice(ID int) (models.Product, error)
+    GetSalesDetailBySale(SalesID int) ([]models.SalesDetail, error)
     CancelInvoice(invoice models.Invoices) (models.Invoices, error)
     UpdateApprove1(invoices models.Invoices) (models.Invoices, error)
     UpdateApprove2(invoices models.Invoices) (models.Invoices, error)
@@ -88,6 +90,19 @@ func (r *repository) GetSales(ID int) (models.Sales, error) {
 	return sales, err
 }
 
+func (r *repository) GetSalesDetailBySale(IDSales int) ([]models.SalesDetail, error) {
+    var salesDetail []models.SalesDetail
+    err := r.db.Where("id_sales = ?", IDSales).Preload("Product").Find(&salesDetail).Error
+
+    return salesDetail, err
+}
+
+
+func (r *repository) GetProductInvoice(ID int) (models.Product, error) {
+    var product models.Product
+    err := r.db.First(&product, ID).Error
+    return product, err
+}
 
 func (r *repository) DeleteInvoiceAndSales(invoiceID int) error {
     // Fetch the invoice to get the associated sales ID
@@ -107,11 +122,6 @@ func (r *repository) DeleteInvoiceAndSales(invoiceID int) error {
     return err
 }
 
-// func (r *repository) DeleteSales(sales models.Sales) (models.Sales, error) {
-//     err := r.db.Delete(&sales).Error
-//     return sales, err
-// }
-
 func (r *repository) CancelInvoice(invoice models.Invoices) (models.Invoices, error) {
     // Update the status of the invoice to 1
     invoice.Status = 1
@@ -128,7 +138,7 @@ func (r *repository) CancelInvoice(invoice models.Invoices) (models.Invoices, er
 func (r *repository) PrintInvoice(ID int) (string, error) {
     // Fetch the necessary data for generating the invoice with preloaded Sales and Customer
     var invoice models.Invoices
-    err := r.db.Preload("Sales").Preload("Sales.Customer").Preload("SalesDetail").First(&invoice, ID).Error
+    err := r.db.Preload("Sales").Preload("Sales.Customer").First(&invoice, ID).Error
     if err != nil {
         return "", fmt.Errorf("failed to fetch invoice data: %v", err)
     }
@@ -144,10 +154,29 @@ func (r *repository) PrintInvoice(ID int) (string, error) {
     // Access the preloaded Sales and Customer data
     if invoice.Sales.Customer.ID != 0 {
         pdf.Cell(40, 10, fmt.Sprintf("Customer Name: %s", invoice.Sales.Customer.NameCustomer))
-        // Add more customer details as needed
+        //  Add more customer details as needed
     }
 
-    // Add more details as needed
+    // Fetch SalesDetail based on Sales ID
+    salesDetails, err := r.GetSalesDetailBySale(invoice.Sales.ID)
+    if err != nil {
+        return "", fmt.Errorf("failed to fetch sales details: %v", err)
+    }
+
+    // Access the fetched SalesDetail data
+    if len(salesDetails) > 0 {
+        pdf.Ln(10)
+        pdf.Cell(40, 10, "Sales Details:")
+        pdf.Ln(5)
+
+        for _, salesDetail := range salesDetails {
+            pdf.Cell(40, 10, fmt.Sprintf("Product: %s", salesDetail.Product.NameProduct))
+            pdf.Ln(5)
+            pdf.Cell(40, 10, fmt.Sprintf("Quantity: %d", salesDetail.Qty))
+            pdf.Ln(5)
+            // Add more sales detail information as needed
+        }
+    }
 
     // Save the PDF content to a buffer
     var buf bytes.Buffer
@@ -161,3 +190,7 @@ func (r *repository) PrintInvoice(ID int) (string, error) {
 
     return content, nil
 }
+
+
+
+
