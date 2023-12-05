@@ -424,7 +424,7 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         pdf.ImageOptions("asset/logo-arna.png", xCoordinate, 0, 35, 25, false,
             gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
-        // Center "Invoice" and "PT Arwana Ceramics" at the top
+        // // Center "Invoice" and "PT Arwana Ceramics" at the top
         pdf.CellFormat(0, 10, "Invoice", "", 0, "C", false, 0, "")
         pdf.Ln(5)
         pdf.CellFormat(0, 10, "PT Arwana Ceramics", "", 0, "C", false, 0, "")
@@ -483,8 +483,8 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
 			}
 
 			// Add data to the table
-			deliveryNumber := fmt.Sprintf("%d", invoice.Sales.DeliveryOrderNumber)
-			pdf.CellFormat(30.0, cellHeight, deliveryNumber, "1", 0, "C", false, 0, "")
+			// deliveryNumber := fmt.Sprintf("%d", invoice.Sales.DeliveryOrderNumber)
+			pdf.CellFormat(30.0, cellHeight,invoice.Sales.DeliveryOrderNumber, "1", 0, "C", false, 0, "")
 			pdf.CellFormat(cellWidth, cellHeight, salesDetail.Product.NameProduct, "1", 0, "C", false, 0, "")
 			quantity := fmt.Sprintf("%d", salesDetail.Qty)
 			pdf.CellFormat(30.0, cellHeight, quantity, "1", 0, "C", false, 0, "")
@@ -525,18 +525,20 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
 		pdf.CellFormat(width, height, fmt.Sprintf("Grand Total: %s", grandtotal), "", 0, "R", false, 0, "")
 		pdf.Ln(lineHeight)
 
+		// Set headers for download
+		c.Response().Header().Set("Content-Type", "application/pdf")
+		c.Response().Header().Set("Content-Disposition", "attachment; filename=invoice.pdf")
+
+		// Output PDF directly to response writer
 		err = pdf.Output(c.Response().Writer)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to generate PDF"})
 		}
-	
-		c.Response().Header().Set("Content-Type", "application/pdf")
-		c.Response().Header().Set("Content-Disposition", "inline; filename=invoice.pdf")
-	
-		fmt.Printf("Invoice %d PDF generated and shown successfully!\n", id)
-	
+
+		fmt.Printf("Invoice %d PDF generated and downloaded successfully!\n", id)
+
 		return nil
-    }
+		}
 
     return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: "Invoice is not approved for showing PDF."})
 }
