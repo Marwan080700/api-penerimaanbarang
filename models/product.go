@@ -8,7 +8,7 @@ type Product struct {
 	IDCategoryProduct int       `json:"-" form:"product_category_id"`
 	ProductCategories ProductCategories `json:"-" gorm:"foreignKey:IDCategoryProduct"`
 	NameProduct       string    `json:"product_name" form:"product_name" gorm:"type:varchar(255)"`
-	Unit              int    `json:"unit" form:"unit"  gorm:"type:int"`
+	Unit              string    `json:"unit" form:"unit"  gorm:"type:varchar(255)"`
 	Price             int       `json:"price" form:"price" gorm:"type:int"`
 	Desc              string    `json:"desc" form:"desc" gorm:"type:varchar(255)"`
     CreatedBy        string    `json:"created_by" gorm:"type:varchar(255)"`

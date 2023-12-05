@@ -56,11 +56,6 @@ func (h *handlerProduct) GetProduct(c echo.Context) error {
 }
 
 func (h *handlerProduct) CreateProduct(c echo.Context) error {
-	unit, err := strconv.Atoi(c.FormValue("unit"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
-	}
-
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid price value"})
@@ -75,7 +70,7 @@ func (h *handlerProduct) CreateProduct(c echo.Context) error {
 		IdentityProduct:   c.FormValue("product_identity"),
 		IDCategoryProduct: idCategoryProduct,
 		NameProduct:       c.FormValue("product_name"),
-		Unit:              unit,
+		Unit:              c.FormValue("unit"),
 		Price:             price,
 		Desc:              c.FormValue("desc"),
 		CreatedBy:         c.FormValue("created_by"),
@@ -120,10 +115,6 @@ func (h *handlerProduct) UpdateProduct(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as number."})
 	}
 
-	unit, err := strconv.Atoi(c.FormValue("unit"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value"})
-	}
 
 	price, err := strconv.Atoi(c.FormValue("price"))
 	if err != nil {
@@ -140,7 +131,7 @@ func (h *handlerProduct) UpdateProduct(c echo.Context) error {
 		IdentityProduct:   c.FormValue("product_identity"),
 		IDCategoryProduct: idCategoryProduct,
 		NameProduct:       c.FormValue("product_name"),
-		Unit:              unit,
+		Unit:              c.FormValue("unit"),
 		Price:             price,
 		Desc:              c.FormValue("desc"),
 		CreatedBy:         c.FormValue("created_by"),
@@ -174,7 +165,7 @@ func (h *handlerProduct) UpdateProduct(c echo.Context) error {
 		product.NameProduct = request.NameProduct
 	}
 
-	if request.Unit != 0 {
+	if request.Unit != "" {
 		product.Unit = request.Unit
 	}
 	if request.Price != 0 {

@@ -1,7 +1,7 @@
 package salesdto
 
 type SalesRequest struct {
-	DeliveryOrderNumber int    `json:"delivery_order_number" form:"delivery_order_number" gorm:"type:int"`
+	DeliveryOrderNumber string    `json:"delivery_order_number" form:"delivery_order_number" gorm:"type:varchar(255)"`
 	IDCustomer          int    `json:"customer_id" form:"customer_id"`
 	IDUser              int    `json:"user_id" form:"user_id"`
 	DateSale            string `json:"sale_date" form:"sale_date" gorm:"type:varchar(255)"`
@@ -11,7 +11,7 @@ type SalesRequest struct {
 }
 
 type SalesResponse struct {
-	DeliveryOrderNumber int    `json:"delivery_order_number" form:"delivery_order_number" gorm:"type:int"`
+	DeliveryOrderNumber string    `json:"delivery_order_number" form:"delivery_order_number" gorm:"type:varchar(255)"`
 	IDCustomer          int    `json:"customer_id" form:"customer_id"`
 	IDUser              int    `json:"user_id" form:"user_id"`
 	DateSale            string `json:"sale_date" form:"sale_date" gorm:"type:varchar(255)"`

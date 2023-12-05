@@ -57,11 +57,6 @@ func (h *handlerSales) GetSale(c echo.Context) error {
 }
 
 func (h *handlerSales) CreateSale(c echo.Context) error {
-	deliveryordernumber, err := strconv.Atoi(c.FormValue("delivery_order_number"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value delivery"})
-	}
-
 	customerid, err := strconv.Atoi(c.FormValue("customer_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value customer"})
@@ -78,7 +73,7 @@ func (h *handlerSales) CreateSale(c echo.Context) error {
 	}
 
 	request := salesdto.SalesRequest{
-		DeliveryOrderNumber: deliveryordernumber,
+		DeliveryOrderNumber: c.FormValue("delivery_order_number"),
 		IDCustomer: customerid,
 		IDUser: userid,
 		DateSale: c.FormValue("sale_date"),
@@ -119,11 +114,6 @@ func (h *handlerSales) UpdateSale(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as number."})
 	}
 
-	deliveryordernumber, err := strconv.Atoi(c.FormValue("delivery_order_number"))
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value delivery number"})
-	}
-
 	customerid, err := strconv.Atoi(c.FormValue("customer_id"))
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid unit value customer id"})
@@ -140,7 +130,7 @@ func (h *handlerSales) UpdateSale(c echo.Context) error {
 	}
 
 	request := salesdto.SalesRequest{
-		DeliveryOrderNumber: deliveryordernumber,
+		DeliveryOrderNumber:  c.FormValue("delivery_order_number"),
 		IDCustomer: customerid,
 		IDUser: userid,
 		DateSale: c.FormValue("sale_date"),
@@ -164,7 +154,7 @@ func (h *handlerSales) UpdateSale(c echo.Context) error {
 		fmt.Println(err.Error())
 	}
 
-	if request.DeliveryOrderNumber != 0 {
+	if request.DeliveryOrderNumber != "" {
 		sales.DeliveryOrderNumber = request.DeliveryOrderNumber
 	}
 
