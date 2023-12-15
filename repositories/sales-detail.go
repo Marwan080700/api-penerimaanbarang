@@ -11,7 +11,7 @@ type SalesDetailRepository interface {
 	GetSalesDetail(ID int) (models.SalesDetail, error)
 	CreateSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
 	UpdateSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
-	// DeleteSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
+	DeleteSaleDetail(salesdetail models.SalesDetail) (models.SalesDetail, error)
 	GetSalesDetailBySales(IDSales int) ([]models.SalesDetail, error)
 }
 
@@ -39,11 +39,11 @@ func (r *repository) CreateSalesDetail(salesdetail models.SalesDetail) (models.S
     return salesdetail, err
 }
 
-// func (r *repository) DeleteSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error) {
-// 	err := r.db.Delete(&salesdetail).Error
+func (r *repository) DeleteSaleDetail(salesdetail models.SalesDetail) (models.SalesDetail, error) {
+	err := r.db.Delete(&salesdetail).Error
 
-// 	return salesdetail, err
-// }
+	return salesdetail, err
+}
 
 func (r *repository) UpdateSalesDetail(salesdetail models.SalesDetail) (models.SalesDetail, error) {
 	err := r.db.Save(&salesdetail).Error
