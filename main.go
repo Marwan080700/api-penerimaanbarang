@@ -1,7 +1,7 @@
 package main
 
 import (
-	// "os"
+	"os"
 	"pengirimanbarang/database"
 	"pengirimanbarang/pkg/mysql"
 	"pengirimanbarang/routes"
@@ -29,8 +29,8 @@ func main() {
 
 	// e.Static("/uploads", "./uploads")
 
-	// PORT := os.Getenv("PORT")
+	PORT := os.Getenv("PORT")
 
-	// e.Logger.Fatal(e.Start(":" + PORT))
-	e.Logger.Fatal(e.Start("localhost:5000"))
+	e.Logger.Fatal(e.Start(":" + PORT))
+	// e.Logger.Fatal(e.Start("localhost:5000"))
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	// "context"
+	"bytes"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -412,6 +413,7 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         // Generate PDF
         marginX := 10.0
         marginY := 20.0
+		var pdfBuffer bytes.Buffer
         pdf := gofpdf.New("P", "mm", "A4", "")
         pdf.SetMargins(marginX, marginY, marginX)
         pdf.AddPage()
@@ -525,23 +527,31 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
 		pdf.CellFormat(width, height, fmt.Sprintf("Grand Total: %s", grandtotal), "", 0, "R", false, 0, "")
 		pdf.Ln(lineHeight)
 
-		// Set headers for download
-		c.Response().Header().Set("Content-Type", "application/pdf")
-		c.Response().Header().Set("Content-Disposition", "attachment; filename=invoice.pdf")
 
-		// Output PDF directly to response writer
-		err = pdf.Output(c.Response().Writer)
-		if err != nil {
-			return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to generate PDF"})
-		}
+        // Output PDF to buffer
+        if err := pdf.Output(&pdfBuffer); err != nil {
+            fmt.Println("PDF Output Error:", err)
+            return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to generate PDF"})
+        }
 
-		fmt.Printf("Invoice %d PDF generated and downloaded successfully!\n", id)
+        // Set headers for download
+        c.Response().Header().Set("Content-Type", "application/pdf")
+        c.Response().Header().Set("Content-Disposition", "attachment; filename=invoice.pdf")
 
-		return nil
-		}
+        // Write the PDF content to the response
+        _, err = c.Response().Writer.Write(pdfBuffer.Bytes())
+        if err != nil {
+            fmt.Println("Write to Response Error:", err)
+            return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to write PDF to response"})
+        }
+
+        return nil
+    }
 
     return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: "Invoice is not approved for showing PDF."})
 }
+
+
 
 
 
