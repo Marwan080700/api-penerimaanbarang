@@ -5,6 +5,6 @@ type User struct {
 	UserName string `json:"username" form:"username" gorm:"column:username;type:varchar(255)"`
 	Name     string `json:"name" form:"name" gorm:"type:varchar(255)"`
 	Password string `json:"password" form:"password" gorm:"type:varchar(255)"`
-	Role     string `json:"role" form:"role" gorm:"type:varchar(255);default:'user'"`
+	Role     string `json:"role" form:"role" gorm:"type:varchar(255);default:'staff'"`
 	Status   string `json:"status" form:"status" gorm:"type:varchar(255);default:'inactive'"`
 }

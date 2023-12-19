@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	invoicedto "pengirimanbarang/dto/invoice"
 	dto "pengirimanbarang/dto/result"
@@ -13,6 +14,7 @@ import (
 	"pengirimanbarang/repositories"
 
 	"github.com/jung-kurt/gofpdf"
+	// "github.com/signintech/gopdf"
 
 	// "os"
 
@@ -263,11 +265,10 @@ func (h *handlerInvoice) UpdateApprove1(c echo.Context) error {
 	}
 
 	request := invoicedto.InvoiceRequest{
-		Approve1: c.FormValue("approve_1"),
+		Approve1:     c.FormValue("approve_1"),
 		Approve1Date: c.FormValue("approve_1_date"),
 		Approve1Desc: c.FormValue("approve_1_desc"),
-
-    }
+	}
 
 	validation := validator.New()
 	err = validation.Struct(request)
@@ -290,6 +291,10 @@ func (h *handlerInvoice) UpdateApprove1(c echo.Context) error {
 
 	if request.Approve1Date != "" {
 		invoice.Approve1Date = request.Approve1Date
+	} else {
+		// If Approve1Date is not provided, set it to the current date
+		now := time.Now()
+		invoice.Approve1Date = now.Format("2006-01-02") // Format it as needed
 	}
 
 	if request.Approve1Desc != "" {
@@ -311,11 +316,10 @@ func (h *handlerInvoice) UpdateApprove2(c echo.Context) error {
 	}
 
 	request := invoicedto.InvoiceRequest{
-		Approve2: c.FormValue("approve_2"),
+		Approve2:     c.FormValue("approve_2"),
 		Approve2Date: c.FormValue("approve_2_date"),
 		Approve2Desc: c.FormValue("approve_2_desc"),
-
-    }
+	}
 
 	validation := validator.New()
 	err = validation.Struct(request)
@@ -338,6 +342,10 @@ func (h *handlerInvoice) UpdateApprove2(c echo.Context) error {
 
 	if request.Approve2Date != "" {
 		invoice.Approve2Date = request.Approve2Date
+	} else {
+		// If Approve2Date is not provided, set it to the current date
+		now := time.Now()
+		invoice.Approve2Date = now.Format("2006-01-02") // Format it as needed
 	}
 
 	if request.Approve2Desc != "" {

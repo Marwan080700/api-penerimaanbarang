@@ -156,17 +156,18 @@ func (h *handlerAuth) GetUser(c echo.Context) error {
 func (h *handlerAuth) UpdateUser(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as number."})
+		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: "Invalid ID! Please input id as a number."})
 	}
 
 	request := authdto.AuthRequest{
 		// UserName: c.FormValue("username"),
-		// Name: c.FormValue("name"),
-		// Password: c.FormValue("password"),
-        Role: c.FormValue("role"),
-        Status: c.FormValue("status"),
+		// Name:     c.FormValue("name"),
+		Password: c.FormValue("password"),
+		Role:     c.FormValue("role"),
+		Status:   c.FormValue("status"),
 	}
 
+	// Uncomment if you want to validate the update request
 	// validation := validator.New()
 	// err = validation.Struct(request)
 	// if err != nil {
@@ -178,8 +179,21 @@ func (h *handlerAuth) UpdateUser(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "Failed", Message: err.Error()})
 	}
 
-	if err != nil {
-		fmt.Println(err.Error())
+	// if request.UserName != "" {
+	// 	user.UserName = request.UserName
+	// }
+
+	// if request.Name != "" {
+	// 	user.Name = request.Name
+	// }
+
+	if request.Password != "" {
+		// Update the password if provided
+		hashedPassword, err := bcrypt.HashingPassword(request.Password)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, dto.ErrorResult{Status: "failed", Message: err.Error()})
+		}
+		user.Password = hashedPassword
 	}
 
 	if request.Role != "" {
@@ -189,7 +203,6 @@ func (h *handlerAuth) UpdateUser(c echo.Context) error {
 	if request.Status != "" {
 		user.Status = request.Status
 	}
-
 
 	data, err := h.AuthRepository.UpdateUser(user)
 	if err != nil {
