@@ -14,6 +14,8 @@ import (
 	"pengirimanbarang/repositories"
 
 	"github.com/jung-kurt/gofpdf"
+	"github.com/skip2/go-qrcode"
+
 	// "github.com/signintech/gopdf"
 
 	// "os"
@@ -425,7 +427,7 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         pdf := gofpdf.New("P", "mm", "A4", "")
         pdf.SetMargins(marginX, marginY, marginX)
         pdf.AddPage()
-        pdf.SetFont("Arial", "B", 14)
+        pdf.SetFont("Arial", "B", 12)
 
         pageWidth := 175.0
         xCoordinate := pageWidth / 2
@@ -435,9 +437,12 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
             gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
         // // Center "Invoice" and "PT Arwana Ceramics" at the top
-        pdf.CellFormat(0, 10, "Invoice", "", 0, "C", false, 0, "")
-        pdf.Ln(5)
         pdf.CellFormat(0, 10, "PT Arwana Ceramics", "", 0, "C", false, 0, "")
+        pdf.Ln(10)
+		pdf.SetFont("Arial", "B", 16) // Set font to Arial, bold, and size 16
+
+		pdf.CellFormat(0, 10, "Invoice", "", 0, "C", false, 0, "")
+		pdf.SetFont("Arial", "B", 12)
         pdf.Ln(20)
 
         // Add invoice details to PDF with flexible layout
@@ -451,22 +456,23 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
         // Add "Invoice Number" to the right in the same line
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("Invoice Number: %s", invoice.NumberInvoice), "", 0, "R", false, 0, "")
         pdf.Ln(lineHeight)
-
+		
         // Add "Date" to the right in the same line
-        pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
+        pdf.CellFormat(cellWidth, lineHeight,fmt.Sprintf("     Alamat: %s", invoice.Sales.Customer.AddressCustomer),"", 0, "L", false, 0, "")
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("Date: %s", invoice.DateInvoice), "", 0, "R", false, 0, "")
         pdf.Ln(lineHeight)
+		pdf.Ln(2 * lineHeight) 
 
         // Add "No. Faktur Pajak" to the right in the same line
         pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
         pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("No. Faktur Pajak: %s", invoice.NoFakturPajak), "", 0, "R", false, 0, "")
         pdf.Ln(lineHeight)
 
-        // Add "No. Faktur Pajak Pengganti" to the right in the same line
-        pdf.CellFormat(cellWidth, lineHeight, "", "", 0, "L", false, 0, "")
-        pdf.CellFormat(cellWidth, lineHeight, fmt.Sprintf("No.Faktur Pajak Pengganti: %s", invoice.NoFakturPajakPengganti), "", 0, "R", false, 0, "")
         pdf.Ln(2 * lineHeight) // Increased space after this line
 
+		pdf.CellFormat(cellWidth, lineHeight, "Untuk pembayaraan barang - barang tersebut dibawah ini :", "", 0, "L", false, 0, "")
+		pdf.Ln(2 * lineHeight)
+		// pdf.CellFormat(0, 10, "Invoice", "", 0, "C", false, 0, "")
         // Draw a line after the Date
         // pdf.Line(marginX, pdf.GetY(), 210-marginX, pdf.GetY())
         // pdf.Ln(lineHeight)
@@ -533,8 +539,46 @@ func (h *handlerInvoice) PrintInvoice(c echo.Context) error {
 		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
 		grandtotal := fmt.Sprintf("%d", invoice.TotalAmount)
 		pdf.CellFormat(width, height, fmt.Sprintf("Grand Total: %s", grandtotal), "", 0, "R", false, 0, "")
+		pdf.Ln(2 * lineHeight)
+
+		
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		pdf.CellFormat(width, height, "Hormat Kami,", "", 0, "R", false, 0, "")
+		pdf.Ln(2 * lineHeight)
+
+		// Generate QR code
+		qrData := fmt.Sprintf("No. Invoice: %s\nApprove MAnager %s", invoice.NumberInvoice, invoice.Approve2Date)
+		qr, err := qrcode.New(qrData, qrcode.Medium)
+		if err != nil {
+			fmt.Println("QR Code Generation Error:", err)
+			return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to generate QR code"})
+		}
+
+		// Save QR code image to a file
+		filename := "qrcode.png"
+		err = qr.WriteFile(256, filename)  // Adjust the size as needed
+
+		if err != nil {
+			fmt.Println("QR Code WriteFile Error:", err)
+			return c.JSON(http.StatusInternalServerError, dto.ErrorResult{Status: "Failed", Message: "Failed to write QR code to file"})
+		}
+
+
+		// Add QR code image file to the PDF
+		qrCodeX := xCoordinate + 80.0 // Adjust this value based on your layout
+		qrCodeY := pdf.GetY()         // Align with the current Y-coordinate
+		pdf.ImageOptions(filename, qrCodeX, qrCodeY, 25, 25, false, gofpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+		pdf.Ln(7 *lineHeight)
+
+
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		pdf.CellFormat(width, height, "( Nama Manager )", "", 0, "R", false, 0, "")
 		pdf.Ln(lineHeight)
 
+		
+		pdf.CellFormat(width, height, "", "", 0, "L", false, 0, "")
+		pdf.CellFormat(width, height, "Finance Manager", "", 0, "R", false, 0, "")
+		pdf.Ln(lineHeight)
 
         // Output PDF to buffer
         if err := pdf.Output(&pdfBuffer); err != nil {
